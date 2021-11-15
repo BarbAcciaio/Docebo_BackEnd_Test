@@ -6,23 +6,22 @@
         private $password = "qazwsx159753";
         private $treeTable = 'node_tree';
         private $nodeNameTable = 'node_tree_names';
-        private $query = 'SELECT nodes.level, nodes.iLeft, nodes.iRight 
-                            INTO @fatherlevel, @fatherLeft, @fatherRight
-                            FROM {treeTable} nodes
-                           WHERE idNode = :idNode;
-
-                          SELECT nodes.idNode
-	                            ,names.nodeName
-	                            ,(SELECT COUNT(*)
+        private $query = 'SELECT nodes.idNode
+                                ,names.nodeName
+                                ,(SELECT COUNT(*)
                                     FROM {treeTable} children
-		                           WHERE children.iLeft BETWEEN nodes.iLeft AND nodes.iRight
+                                   WHERE children.iLeft BETWEEN nodes.iLeft AND nodes.iRight
                                      AND children.level = nodes.level + 1) childrenCount
                             FROM {treeTable} nodes
                             LEFT JOIN {nodeNameTable} names ON nodes.idNode = names.idNode
-                           WHERE nodes.level = @fatherlevel + 1
-                             AND nodes.iLeft BETWEEN @fatherLeft AND @fatherRight
+                           INNER JOIN(SELECT f.level, f.iLeft, f.iRight
+                                        FROM {treeTable} f
+                                       WHERE f.idNode = :idNode) father
+                           WHERE nodes.level = father.level + 1
+                             AND nodes.iLeft BETWEEN father.iLeft AND father.iRight
                              AND names.language = :language
-                            LIMIT :limit OFFSET :offset;';
+                             AND (names.nodeName like :keySearch OR :disableSearch = 1)
+                            LIMIT :limit OFFSET :offset';
 
         public $conn;
 

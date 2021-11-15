@@ -13,7 +13,7 @@
 
     $mainController = new MainController($_GET);
     $response = $mainController->readData();
-    echo $response->toJson();
+    // echo $response->toJson();
     // $mainController->start();
     http_response_code(200);
 

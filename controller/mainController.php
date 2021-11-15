@@ -22,33 +22,31 @@
         public function readData(){
             $response = new Response();
             try{
-                echo json_encode($this);
-                $doSearch = $this->keySearch != "" ? 1 : 0;
+                $keySearch = '%' . $this->keySearch . '%';
+                $doSearch = $this->keySearch == "" ? 1 : 0;
                 $dbConnection = $this->config->getConnection();
                 $stmt = $dbConnection->prepare($this->config->getQuery());
-                $stmt->bindValue(':idNode', $this->nodeId);
-                $stmt->bindValue(':language', $this->language);
-                // $stmt->bindValue(':keySearch', $this->keySearch);
-                // $stmt->bindValue(':disableSearch', $doSearch);
-                $stmt->bindValue(':limit', $this->pageSize);
-                $stmt->bindValue(':offset', $this->pageNum);
+                $stmt->bindValue(':idNode', $this->nodeId, PDO::PARAM_INT);
+                $stmt->bindValue(':language', $this->language, PDO::PARAM_STR);
+                $stmt->bindValue(':keySearch', $this->keySearch, PDO::PARAM_STR);
+                $stmt->bindValue(':disableSearch', $doSearch, PDO::PARAM_INT);
+                $stmt->bindValue(':limit', $this->pageSize, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', $this->pageNum, PDO::PARAM_INT);
                 $stmt->execute();
-                // $stmt->execute([
-                //     ':idNode' => $this->nodeId,
-                //     ':language' => $this->language,
-                //     ':keySearch' => $this->keySearch,
-                //     ':disableSearch' => $keySearch,
-                //     ':limit' => $this->pageSize,
-                //     ':offset' => $this->pageNum
-                // ]);
-                // echo $stmt->rowCount();
-                echo json_encode($stmt->fetchAll());
-                // $currentNode = $stmt->fetchObject();
-                // while($currentNode != false){
-                //     echo $currentNode->toJson();
-                //     // $response->addNode($currentNode);
+                // $stmt->bind_result($idNode, $nodeName, $childrenCount);
+                // while ($stmt->fetch()) {
+                //     $node = new Node($idNode, $nodeName, $childrenCount);
                 // }
-                // for($currentNode = $stmt->fetchObject(); $currentNode != false; $response->addNode($currentNode), $currentNode->fetchObject());
+                for($currentNode = $stmt->fetchObject('Node'); !$end; $stmt->fetchObject('Node')){
+                    if(isset($currentNode) && $currentNode != false){
+                        $response->addNode($currentNode);
+                    }
+                    else{
+                        $end = true;
+                    }
+                }
+
+                $stmt->close();
 
             } catch(Exception $ex){
                 echo $ex->getMessage();

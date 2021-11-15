@@ -6,7 +6,7 @@
         private $childrenCount;
 
         // Constructor
-        public function __construct($nodeId, $name, $childrenCount){
+        public function __construct($idNode, $nodeName, $childrenCount){
             $this->nodeId = $nodeId;
             $this->name = $name;
             $this->childrenCount = $childrenCount;

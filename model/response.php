@@ -17,7 +17,7 @@
         }
 
         public function addNode($node){
-            if(!is_array($nodes))
+            if(!is_array($this->nodes))
                 $this->nodes = array();
             return array_push($this->nodes, $node);
         }
