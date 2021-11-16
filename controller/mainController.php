@@ -2,57 +2,70 @@
 
     class MainController implements JsonSerializable {
         private Config $config;
-        private int $nodeId;
-        private string $language;
-        private string $keySearch;
-        private int $pageNum;
-        private int $pageSize;
         private Response $response;
+        private $langEnum = array('english' => 'english', 'italian' => 'italian');
 
         public function __construct($getParams){
             $this->config = new Config();
-            $this->nodeId = $getParams['node_id'];
-            $this->language = $getParams['language'];
             $this->response = new Response();
-            $this->keySearch = isset($getParams['search_keyword']) ? $getParams['search_keyword'] : "";
-            $this->pageNum = isset($getParams['page_num']) ? $getParams['page_num'] : 0;
-            $this->pageSize = isset($getParams['page_size']) ? $getParams['page_size'] : 100;
         }
 
-        public function readData(){
-            $response = new Response();
+
+        public function readData($getParams){
             try{
-                $keySearch = '%' . $this->keySearch . '%';
-                $doSearch = $this->keySearch == "" ? 1 : 0;
                 $dbConnection = $this->config->getConnection();
-                $stmt = $dbConnection->prepare($this->config->getQuery());
-                $stmt->bindValue(':idNode', $this->nodeId, PDO::PARAM_INT);
-                $stmt->bindValue(':language', $this->language, PDO::PARAM_STR);
-                $stmt->bindValue(':keySearch', $this->keySearch, PDO::PARAM_STR);
-                $stmt->bindValue(':disableSearch', $doSearch, PDO::PARAM_INT);
-                $stmt->bindValue(':limit', $this->pageSize, PDO::PARAM_INT);
-                $stmt->bindValue(':offset', $this->pageNum, PDO::PARAM_INT);
-                $stmt->execute();
-                // $stmt->bind_result($idNode, $nodeName, $childrenCount);
-                // while ($stmt->fetch()) {
-                //     $node = new Node($idNode, $nodeName, $childrenCount);
-                // }
-                for($currentNode = $stmt->fetchObject('Node'); !$end; $stmt->fetchObject('Node')){
-                    if(isset($currentNode) && $currentNode != false){
-                        $response->addNode($currentNode);
-                    }
-                    else{
-                        $end = true;
+                if(validateParams($dbConnection, $getParams)){
+                    $keySearch = '%' . $getParams['search_keyword'] . '%';
+                    $doSearch = (!isset($getParams['search_keyword']) || $getParams['search_keyword']  == "") ? 1 : 0;
+                    $language = $langEnum[$getParams['language']];
+                    $dbConnection = $this->config->getConnection();
+                    $stmt = $dbConnection->prepare($this->config->getQuery());
+                    $stmt->bindValue(':idNode', $getParams['node_id'], PDO::PARAM_INT);
+                    $stmt->bindValue(':language', $language, PDO::PARAM_STR);
+                    $stmt->bindValue(':keySearch', $keySearch, PDO::PARAM_STR);
+                    $stmt->bindValue(':disableSearch', $doSearch, PDO::PARAM_INT);
+                    $stmt->bindValue(':limit', $getParams['page_size'], PDO::PARAM_INT);
+                    $stmt->bindValue(':offset', $getParams['page_num'], PDO::PARAM_INT);
+                    $stmt->execute();
+                    while (($row = $stmt->fetch())) {
+                        $node = new Node($row["idNode"], $row["nodeName"], $row["childrenCount"]);
+                        $this->response->addNode($node);
                     }
                 }
-
-                $stmt->close();
-
             } catch(Exception $ex){
                 echo $ex->getMessage();
             }
 
-            return $response;
+            return $this->response;
+        }
+
+        public function validateParams($dbConnection, $getParams){
+            try{
+                if(!isset($getParams['node_id']) || !isset($getParams['language'])){
+                    $response->setError("Missing manadatory params");
+                    return false;
+                }
+
+                $stmt = $dbConnection->prepare($this->config->getQuery());
+                $stmt->bindValue(':idNode', $getParams['node_id'], PDO::PARAM_INT);
+                $stmt->execute();
+                if(!($nodeId = $stmt->fetch()) || $nodeId != $getParams['node_id']){
+                    $response->setError("InvalidNodeId");
+                }
+                if(!isset($getParams['page_num']) || !is_int($getParams['page_num'] || $getParams['page_num'] < 0)){
+                    $response->setError("Invalid page number requested");
+                    return false;
+                }
+                if(!isset($getParams['page_size']) || !is_int($getParams['page_size'] || $getParams['page_size'] < 0 || $getParams > 1000)){
+                    $response->setError("Invalid page size requested");
+                    return false;
+                }
+            } catch(Exception $ex){
+                $this->response->setError("Server error");
+                return false;
+            }
+
+            return true;
         }
 
 

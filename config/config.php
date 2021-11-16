@@ -22,12 +22,16 @@
                              AND names.language = :language
                              AND (names.nodeName like :keySearch OR :disableSearch = 1)
                             LIMIT :limit OFFSET :offset';
+        private $checkParentQuery = 'SELECT idNode
+                                       FROM {treeTable}
+                                      WHERE idNode = :idNode';
 
         public $conn;
 
         public function __construct(){
             $this->query = str_replace('{treeTable}', $this->treeTable, $this->query);
             $this->query = str_replace('{nodeNameTable}', $this->nodeNameTable, $this->query);
+            $this->checkParent = str_replace('{treeTable}', $this->treeTable, $this->checkParentQuery);
         }
 
         public function getConnection(){
@@ -37,7 +41,7 @@
                 $this->conn->exec("set names utf8");
                 $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch(PDOException $ex){
-                echo "Could not connect to database: " . $ex->getMessage();
+                echo 'Server error';
             }
 
             return $this->conn;
@@ -45,6 +49,10 @@
 
         public function getQuery(){
             return $this->query;
+        }
+
+        public function getCheckParentQuery(){
+            return $this->checkParentQuery;
         }
 
     }

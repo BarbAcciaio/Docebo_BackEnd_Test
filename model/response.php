@@ -1,5 +1,5 @@
 <?php
-    class Response {
+    class Response implements JsonSerializable {
         private $nodes;
         private $error;
 
@@ -8,8 +8,8 @@
             $this->error = "";
         }
 
-        public function toJson(){
-            return json_encode($this);
+        public function setNodes($nodeList){
+            $this->nodes = $nodeList;
         }
 
         public function setError($error){
@@ -21,5 +21,18 @@
                 $this->nodes = array();
             return array_push($this->nodes, $node);
         }
+
+
+        public function jsonSerialize(){
+            return [
+                'nodes' => $this->nodes,
+                'error' => $this->error
+            ];
+        }
+
+        public function toJson(){
+            return json_encode($this, JSON_PRETTY_PRINT);
+        }
+
     }
 ?>
