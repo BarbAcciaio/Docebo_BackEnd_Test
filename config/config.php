@@ -1,4 +1,7 @@
 <?php
+    /**
+     * Class containing all configuration params
+     */
     class Config {
         private $host = "127.0.0.1";
         private $database_name = "test_organization";
@@ -6,6 +9,10 @@
         private $password = "qazwsx159753";
         private $treeTable = 'node_tree';
         private $nodeNameTable = 'node_tree_names';
+        private $connectionString = 'mysql:host={host};dbname={dbName}';
+        /**
+         * Main Query
+         */
         private $query = 'SELECT nodes.idNode
                                 ,names.nodeName
                                 ,(SELECT COUNT(*)
@@ -21,27 +28,40 @@
                              AND nodes.iLeft BETWEEN father.iLeft AND father.iRight
                              AND names.language = :language
                              AND (names.nodeName like :keySearch OR :disableSearch = 1)
-                            LIMIT :limit OFFSET :offset';
+                           LIMIT :limit OFFSET :offset';
+        /**
+         * Query to check parent existance
+         */
         private $checkParentQuery = 'SELECT idNode
                                        FROM {treeTable}
                                       WHERE idNode = :idNode';
 
+        /**
+         *  "Enum" containing supported language
+         */ 
+        private $langEnum = array('english' => 'english', 'italian' => 'italian');
+
         public $conn;
 
         public function __construct(){
+            $this->connectionString = str_replace('{host}', $this->host, $this->connectionString);
+            $this->connectionString = str_replace('{dbName}', $this->database_name, $this->connectionString);
+            $this->checkParentQuery = str_replace('{treeTable}', $this->treeTable, $this->checkParentQuery);
             $this->query = str_replace('{treeTable}', $this->treeTable, $this->query);
             $this->query = str_replace('{nodeNameTable}', $this->nodeNameTable, $this->query);
-            $this->checkParent = str_replace('{treeTable}', $this->treeTable, $this->checkParentQuery);
         }
-
+        /**
+         * Returns connection to database
+         */
         public function getConnection(){
             $this->conn = null;
             try{
-                $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->database_name, $this->username, $this->password);
+                $this->conn = new PDO($this->connectionString, $this->username, $this->password);
                 $this->conn->exec("set names utf8");
                 $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch(PDOException $ex){
-                echo 'Server error';
+                $this->conn = null;
+                echo $ex->getMessage();
             }
 
             return $this->conn;
@@ -53,6 +73,10 @@
 
         public function getCheckParentQuery(){
             return $this->checkParentQuery;
+        }
+
+        public function getLanguage($idLanguage){
+            return $this->langEnum[$idLanguage];
         }
 
     }

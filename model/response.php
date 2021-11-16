@@ -1,5 +1,11 @@
 <?php
+    /**
+     * Class that represents data to be returned to client
+     */
     class Response implements JsonSerializable {
+        /**
+         * Node list
+         */
         private $nodes;
         private $error;
 
@@ -31,7 +37,7 @@
         }
 
         public function toJson(){
-            return json_encode($this, JSON_PRETTY_PRINT);
+            return json_encode($this);
         }
 
     }

@@ -1,63 +1,99 @@
 <?php
-
-    class MainController implements JsonSerializable {
+    /**
+     * Main controller to handle GET request
+     */
+    class MainController {
+        /**
+         * Configuration object
+         */
         private Config $config;
+        /**
+         * Response object
+         */
         private Response $response;
-        private $langEnum = array('english' => 'english', 'italian' => 'italian');
 
-        public function __construct($getParams){
+        /**
+         * Intialization of configuration and response objects
+         */
+        public function __construct(){
             $this->config = new Config();
             $this->response = new Response();
         }
 
-
-        public function readData($getParams){
+        /**
+         * Function to read requested data from database
+         * Returns json representing requested data
+         */
+        public function readData($params){
             try{
                 $dbConnection = $this->config->getConnection();
-                if(validateParams($dbConnection, $getParams)){
-                    $keySearch = '%' . $getParams['search_keyword'] . '%';
-                    $doSearch = (!isset($getParams['search_keyword']) || $getParams['search_keyword']  == "") ? 1 : 0;
-                    $language = $langEnum[$getParams['language']];
-                    $dbConnection = $this->config->getConnection();
+                // Excracting GET params
+                $getParams = GetParams::extractParams($params);
+                // Parameters validation
+                if($this->validateParams($getParams)){
+                    // Query on db and setting result
+                    $keySearch = '%' . $getParams->getKeySearch() . '%';
+                    $disableSearch = $getParams->getDisabledSearch();
+                    $language = $this->config->getLanguage($getParams->getLanguage());
+                    $pageNum = $getParams->getPageNum();
+                    $pageSize = $getParams->getPageSize();
+                    $offset = $pageNum * $pageSize;
                     $stmt = $dbConnection->prepare($this->config->getQuery());
-                    $stmt->bindValue(':idNode', $getParams['node_id'], PDO::PARAM_INT);
+                    // Binding params to prepared statement
+                    $stmt->bindValue(':idNode', $getParams->getNodeId(), PDO::PARAM_INT);
                     $stmt->bindValue(':language', $language, PDO::PARAM_STR);
                     $stmt->bindValue(':keySearch', $keySearch, PDO::PARAM_STR);
-                    $stmt->bindValue(':disableSearch', $doSearch, PDO::PARAM_INT);
-                    $stmt->bindValue(':limit', $getParams['page_size'], PDO::PARAM_INT);
-                    $stmt->bindValue(':offset', $getParams['page_num'], PDO::PARAM_INT);
+                    $stmt->bindValue(':disableSearch', $disableSearch, PDO::PARAM_INT);
+                    $stmt->bindValue(':limit', $pageSize, PDO::PARAM_INT);
+                    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
                     $stmt->execute();
+                    // Fetching data
                     while (($row = $stmt->fetch())) {
                         $node = new Node($row["idNode"], $row["nodeName"], $row["childrenCount"]);
                         $this->response->addNode($node);
                     }
                 }
             } catch(Exception $ex){
-                echo $ex->getMessage();
+                $this->response->setError("Server error");
             }
 
-            return $this->response;
+            return $this->response->toJson();
         }
 
-        public function validateParams($dbConnection, $getParams){
+        /**
+         * Function that validates params.
+         * Returns boolean. If any problem is found sets response error message and returns false
+         */
+        private function validateParams($getParams){
             try{
-                if(!isset($getParams['node_id']) || !isset($getParams['language'])){
-                    $response->setError("Missing manadatory params");
+                $nodeId = $getParams->getNodeId();
+                $language = $getParams->getLanguage();
+                $pageNum  = $getParams->getPageNum();
+                $pageSize = $getParams->getPageSize();
+                if(!isset($nodeId) || !isset($language)){
+                    $this->response->setError("Missing manadatory params");
                     return false;
+                }
+                $lang = $this->config->getLanguage($language);
+                if(!isset($lang)){
+                    $this->response->setError("Unsupported language " . $language);
+                }
+                $dbConnection = $this->config->getConnection();
+                $stmt = $dbConnection->prepare($this->config->getCheckParentQuery());
+                $stmt->bindValue(':idNode', $nodeId, PDO::PARAM_INT);
+                $stmt->execute();
+                
+                $dbNodeId = $stmt->fetchColumn();
+                if($nodeId != $dbNodeId){
+                    $this->response->setError("Invalid Node Id");
                 }
 
-                $stmt = $dbConnection->prepare($this->config->getQuery());
-                $stmt->bindValue(':idNode', $getParams['node_id'], PDO::PARAM_INT);
-                $stmt->execute();
-                if(!($nodeId = $stmt->fetch()) || $nodeId != $getParams['node_id']){
-                    $response->setError("InvalidNodeId");
-                }
-                if(!isset($getParams['page_num']) || !is_int($getParams['page_num'] || $getParams['page_num'] < 0)){
-                    $response->setError("Invalid page number requested");
+                if(!isset($pageNum) || $pageNum < 0){
+                    $this->response->setError("Invalid page number requested");
                     return false;
                 }
-                if(!isset($getParams['page_size']) || !is_int($getParams['page_size'] || $getParams['page_size'] < 0 || $getParams > 1000)){
-                    $response->setError("Invalid page size requested");
+                if(!isset($pageSize) || $pageSize < GetParams::MIN_PAGE_SIZE || $pageSize > GetParams::MAX_PAGE_SIZE){
+                    $this->response->setError("Invalid page size requested");
                     return false;
                 }
             } catch(Exception $ex){
@@ -66,24 +102,6 @@
             }
 
             return true;
-        }
-
-
-        public function jsonSerialize(){
-            $doSearch = $this->keySearch != "" ? 1 : 0;
-            return [
-                'node_id' => $this->nodeId,
-                'language' => $this->language,
-                'search_keyword' => $this->keySearch,
-                'page_size'=> $this->pageSize,
-                'page_num' => $this->pageNum,
-                'do_search' => $doSearch
-            ];
-        }
-
-        public function toJson(){
-            return json_encode($this);
-        }
-        
+        }        
     }
 ?>

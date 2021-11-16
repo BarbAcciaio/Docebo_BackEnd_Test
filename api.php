@@ -9,12 +9,13 @@
     include_once './config/config.php';
     include_once './model/node.php';
     include_once './model/response.php';
+    include_once './model/getParams.php';
     // echo(json_encode($_GET));
 
-    $mainController = new MainController($_GET);
-    $response = $mainController->readData();
-    echo $response->toJson();
-    // $mainController->start();
-    http_response_code(200);
-
+    // Instance of MainController to handle GET request
+    $mainController = new MainController();
+    // Retrieving data
+    $response = $mainController->readData($_GET);
+    // Returning data
+    echo $response;
 ?>
