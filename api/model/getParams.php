@@ -6,19 +6,19 @@
         /**
          * Default page number
          */
-        public const DEFAULT_PAGE_NUM = 0;
+        const DEFAULT_PAGE_NUM = 0;
         /**
          * Default page size
          */
-        public const DEFAULT_PAGE_SIZE = 100;
+        const DEFAULT_PAGE_SIZE = 100;
         /**
          * Max page size
          */
-        public const MAX_PAGE_SIZE = 1000;
+        const MAX_PAGE_SIZE = 1000;
         /**
          * Min page size
          */
-        public const MIN_PAGE_SIZE = 0;
+        const MIN_PAGE_SIZE = 0;
 
 
         private $nodeId;

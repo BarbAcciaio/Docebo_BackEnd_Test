@@ -1,0 +1,32 @@
+version: "3.2"
+services:
+  php:
+    build: './php/'
+    networks:
+      - backend
+    volumes:
+      - ../api/:/var/www/html/
+  apache:
+    build: './apache/'
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "8080:80"
+    volumes:
+      - ../api/:/var/www/html/
+  mysql:
+    image: mysql:8.0
+    networks:
+      - backend
+    environment:
+      - MYSQL_ROOT_PASSWORD=qazwsx159753
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+        - ./database/:/docker-entrypoint-initdb.d
+networks:
+  frontend:
+  backend:

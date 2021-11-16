@@ -6,11 +6,11 @@
         /**
          * Configuration object
          */
-        private Config $config;
+        private $config;
         /**
          * Response object
          */
-        private Response $response;
+        private $response;
 
         /**
          * Intialization of configuration and response objects

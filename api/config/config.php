@@ -3,7 +3,7 @@
      * Class containing all configuration params
      */
     class Config {
-        private $host = "127.0.0.1";
+        private $host = "mysql";
         private $database_name = "test_organization";
         private $username = "root";
         private $password = "qazwsx159753";
