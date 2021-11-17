@@ -63,6 +63,9 @@
             ];
         }
 
+        /**
+         * Exctracts params from $getParams and returns a getParam object.
+         */
         public static function extractParams($getParams){
             try{
                 $result = new GetParams();
