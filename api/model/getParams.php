@@ -2,7 +2,7 @@
     /**
      * Class representing expected params from client
      */
-    class GetParams{
+    class GetParams implements JsonSerializable{
         /**
          * Default page number
          */
@@ -28,15 +28,6 @@
         private $pageNum;
         private $pageSize;
 
-        // public function __construct($nodeId, $language, $disableSearch, $keySearch, $pageNum, $pageSize){
-        //     $this->nodeId = $nodeId;
-        //     $this->language = $language;
-        //     $this->disableSearch = $disableSearch;
-        //     $this->keySearch = $keySearch;
-        //     $this->pageNum = $pageNum;
-        //     $this->pageSize = $pageSize;
-        // }
-
         public function getNodeId(){
             return $this->nodeId;
         }
@@ -61,24 +52,29 @@
             return $this->pageSize;
         }
 
+        public function jsonSerialize(){
+            return [
+                'nodeId' => $this->nodeId,
+                'language' => $this->language,
+                'keySearch' => $this->keySearch,
+                'disableSearch' => $this->disableSearch,
+                'pageNum' => $this->pageNum,
+                'pageSize' => $this->pageSize
+            ];
+        }
+
         public static function extractParams($getParams){
             try{
-                // $nodeId = isset($getParams['node_id']) ? $getParams['node_id'] : null;
-                // $language = isset$getParams['language'];
-                // $keySearch = isset($getParams['search_keyword']) ? $getParams['search_keyword'] : "NO SEARCH";
-                // $disableSearch = (!isset($getParams['search_keyword']) || $getParams['search_keyword']  == "") ? 1 : 0;
-                // $pageNum = isset($getParams['page_num']) ? $getParams['page_num'] : GetParams::DEFAULT_PAGE_NUM;
-                // $pageSize = isset($getParams['page_size']) ? $getParams['page_size'] : GetParams::DEFAULT_PAGE_SIZE;
                 $result = new GetParams();
-                $result->nodeId = isset($getParams['node_id']) ? $getParams['node_id'] : null;
+                $result->nodeId = isset($getParams['node_id']) ? intval($getParams['node_id']) : null;
                 $result->language = isset($getParams['language']) ? $getParams['language'] : null;
                 $result->keySearch = isset($getParams['search_keyword']) ? $getParams['search_keyword'] : "NO SEARCH";
                 $result->disableSearch = (!isset($getParams['search_keyword']) || $getParams['search_keyword']  == "") ? 1 : 0;
-                $result->pageNum = isset($getParams['page_num']) ? $getParams['page_num'] : GetParams::DEFAULT_PAGE_NUM;
-                $result->pageSize = isset($getParams['page_size']) ? $getParams['page_size'] : GetParams::DEFAULT_PAGE_SIZE;
+                $result->pageNum = isset($getParams['page_num']) ? intval($getParams['page_num']) : GetParams::DEFAULT_PAGE_NUM;
+                $result->pageSize = isset($getParams['page_size']) ? intval($getParams['page_size']) : GetParams::DEFAULT_PAGE_SIZE;
                 return $result;
             } catch(Exception $ex){
-                http_response_code(500);
+                echo $ex->getMessage();
             }
         }
     }

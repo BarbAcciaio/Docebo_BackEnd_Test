@@ -54,6 +54,7 @@
                     }
                 }
             } catch(Exception $ex){
+                echo $ex->getMessage();
                 $this->response->setError("Server error");
             }
 
@@ -97,6 +98,7 @@
                     return false;
                 }
             } catch(Exception $ex){
+                echo $ex->getMessage();
                 $this->response->setError("Server error");
                 return false;
             }

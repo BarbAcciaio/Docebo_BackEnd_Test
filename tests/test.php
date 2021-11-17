@@ -18,80 +18,95 @@
         public function executeTests(){
             $testCounter = 0;
             try{
-                // Testing config.php
+                // Testing Config
+                echo "Testing Config\r\n";
                 $config = new Config();
                 if(!isset($config)){
-                    echo 'Config constructor not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL;
+                    echo "Config constructor not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n";
                     return;
                 }
                 else{
                     $testCounter++;
                 }
 
+                // Testing Config::getConnection
+                echo "Testing Config::getConnection\r\n";
                 $dbConn = $config->getConnection();
                 if(!isset($dbConn)){
-                    echo 'Config::getConnection method not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL;
+                    echo "Config::getConnection method not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n";
                     return;
                 }
                 else{
                     $testCounter++;
                 }
 
+                // Testing database connection
+                echo "Testing database connection\r\n";
                 $stmt = $dbConn->prepare($config->getCheckParentQuery());
                 $stmt->bindValue(':idNode', 5);
                 $stmt->execute();
                 $data = $stmt->fetchAll();
                 if(!isset($data)){
-                    echo 'DB connection not set correctly', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL;
+                    echo "DB connection not set correctly\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n";
                     return;
                 }
                 else{
                     $testCounter++;
                 }
 
+                // Testing language configuration
+                echo "Testing language configuration\r\n";
                 $lang = $config->getLanguage('english');
                 if(!isset($lang)){
-                    echo 'Config language configuration not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL;
+                    echo "Config language configuration not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n";
                     return;
                 }
                 else{
                     $testCounter++;
                 }
 
+                // Testing language configuration
+                echo "Testing language configuration\r\n";
                 $lang = $config->getLanguage('italian');
                 if(!isset($lang)){
-                    echo 'Config language configuration not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL;
-                    return;
-                }
-                else{
-                    $testCounter++;
-                }
-
-                $lang = $config->getLanguage('noLanguage');
-                if(isset($lang)){
-                    echo 'Config language configuration not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL;
+                    echo "Config language configuration not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n";
                     return;
                 }
                 else{
                     $testCounter++;
                 }
                 
+                // Testing language configuration
+                echo "Testing language configuration\r\n";
+                $lang = $config->getLanguage('noLanguage');
+                if(isset($lang)){
+                    echo "Config language configuration not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n";
+                    return;
+                }
+                else{
+                    $testCounter++;
+                }
+                
+                // Testing MainController
+                echo "Testing MainController\r\n";
                 $controller = new MainController();
                 if(!isset($controller)){
-                    echo 'MainController constructor not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL;
+                    echo "MainController constructor not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n";
                     return;
                 }
                 else{
                     $testCounter++;
                 }
 
+                // Testing MainController::readData response
+                echo "Testing MainController::readData\r\n";
                 $controller = new MainController();
                 $testJsonResponse = '{"nodes":[{"node_id":"8","name":"Italia","children_count":"0"},{"node_id":"9","name":"Europa","children_count":"0"},{"node_id":"11","name":"Nord America","children_count":"0"}],"error":""}';
                 $testResponseObj = json_decode($testJsonResponse);
@@ -100,16 +115,16 @@
                 $params = ['node_id' => 7, 'language'=> 'italian'];
                 $response = $controller->readData($params);
                 if(!isset($response)){
-                    echo '\.MainController::readData not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL;
+                    echo "1.MainController::readData not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n";
                     return;
 
                 }
                 else{
                     $testCounter++;
                     if($response != $testJsonResponse){
-                        echo '2.MainController::readData not working', PHP_EOL;
-                        echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL;   
+                        echo "2.MainController::readData not working\r\n";
+                        echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n";   
                         return; 
                     }
                     else {
@@ -117,6 +132,8 @@
                     }
                 }
 
+                // Testing MainController::readData parameters validation
+                echo "Testing MainController::readData parameters validation\r\n";
                 $controller = new MainController();
                 $params = null;
                 $response = null;
@@ -124,14 +141,16 @@
                 $response = $controller->readData($params);
                 $responseObj = json_decode($response);
                 if(!isset($response) || $responseObj->error != "Missing manadatory params"){
-                    echo '3.MainController::readData not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL;    
-                       return;
+                    echo "3.MainController::readData not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n";
+                    return;
                 }
                 else {
                     $testCounter++;
                 }
 
+                // Testing MainController::readData parameters validation
+                echo "Testing MainController::readData parameters validation\r\n";
                 $controller = new MainController();
                 $params = null;
                 $response = null;
@@ -139,14 +158,16 @@
                 $response = $controller->readData($params);
                 $responseObj = json_decode($response);
                 if(!isset($response) || $responseObj->error != "Missing manadatory params"){
-                    echo '4.MainController::readData not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL; 
-                     return;   
+                    echo "4.MainController::readData not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n"; 
+                    return;   
                 }
                 else {
                     $testCounter++;
                 }
 
+                // Testing MainController::readData parameters validation
+                echo "Testing MainController::readData parameters validation\r\n";
                 $controller = new MainController();
                 $params = null;
                 $response = null;
@@ -154,14 +175,16 @@
                 $params = ['node_id' => 7, 'language'=> 'italian', 'search_keyword' => 'america'];
                 $response = $controller->readData($params);
                 if(!isset($response) || $testJsonResponse != $response){
-                    echo '5.MainController::readData not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL; 
+                    echo "5.MainController::readData not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n"; 
                      return;   
                 }
                 else {
                     $testCounter++;
                 }
 
+                // Testing MainController::readData parameters validation
+                echo "Testing MainController::readData parameters validation\r\n";
                 $controller = new MainController();
                 $params = null;
                 $response = null;
@@ -169,14 +192,16 @@
                 $response = $controller->readData($params);
                 $responseObj = json_decode($response);
                 if(!isset($response) || $responseObj->error != "Invalid Node Id"){
-                    echo '6.MainController::readData not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL; 
-                     return;   
+                    echo "6.MainController::readData not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n"; 
+                    return;   
                 }
                 else {
                     $testCounter++;
                 }
 
+                // Testing MainController::readData parameters validation
+                echo "Testing MainController::readData parameters validation\r\n";
                 $controller = new MainController();
                 $params = null;
                 $response = null;
@@ -184,14 +209,16 @@
                 $response = $controller->readData($params);
                 $responseObj = json_decode($response);
                 if(!isset($response) || $responseObj->error != "Invalid page number requested"){
-                    echo '7.MainController::readData not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL; 
+                    echo "7.MainController::readData not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n"; 
                      return;   
                 }
                 else {
                     $testCounter++;
                 }
 
+                // Testing MainController::readData parameters validation
+                echo "Testing MainController::readData parameters validation\r\n";
                 $controller = new MainController();
                 $params = null;
                 $response = null;
@@ -199,22 +226,18 @@
                 $response = $controller->readData($params);
                 $responseObj = json_decode($response);
                 if(!isset($response) || $responseObj->error != "Invalid page size requested"){
-                    echo '8.MainController::readData not working', PHP_EOL;
-                    echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL, PHP_EOL; 
+                    echo "8.MainController::readData not working\r\n";
+                    echo "Passed tests: $testCounter / " . Test::TOTAL . "\r\n";
                      return;   
                 }
                 else {
                     $testCounter++;
-                }
-
-
-
-                
+                }        
             } catch(Exception $ex){
                 echo $ex->getMessage();
             }
 
-            echo 'Passed tests: ' . $testCounter . '/' . Test::TOTAL;
+            echo "Passed tests: $testCounter / " . Test::TOTAL;
 
             return;
         }
