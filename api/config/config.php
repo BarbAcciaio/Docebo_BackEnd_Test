@@ -3,7 +3,9 @@
      * Class containing all configuration params
      */
     class Config {
+        // Docker configuration
         private $host = "mysql";
+        // private $host = '127.0.0.1';
         private $database_name = "test_organization";
         private $username = "root";
         private $password = "qazwsx159753";
@@ -76,7 +78,10 @@
         }
 
         public function getLanguage($idLanguage){
-            return $this->langEnum[$idLanguage];
+            if(isset($this->langEnum[$idLanguage]))
+                return $this->langEnum[$idLanguage];
+
+            return null;
         }
 
     }
